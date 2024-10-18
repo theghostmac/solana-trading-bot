@@ -6,8 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = "4.5.4"
-solana-sdk = "1.18.14"
-reqwest = { version = "0.12.4", features = ["json"] }
-serde = { version = "1.0.203", features = ["derive"] }
-tokio = { version = "1.0.0", features = ["rt", "rt-multi-thread", "macros"] }
+dotenv = "0.15.0"
+thiserror = "1.0.64"
+teloxide = { version = "0.12", features = ["macros"] }
+tokio = { version = "1.40.0", features = ["rt-multi-thread", "macros"] }

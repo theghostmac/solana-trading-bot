@@ -40,3 +40,9 @@ cargo build
 ```
 
 I plan to add a config to be updated with `.env` later.
+
+
+## TODO
+
+- [ ] Create the CLI setup
+- [ ] 
