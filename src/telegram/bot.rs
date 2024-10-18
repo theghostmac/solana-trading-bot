@@ -9,7 +9,7 @@ use teloxide::utils::command::BotCommands;
 pub async fn start_bot(env: &Environment, trading_engine: Arc<TradingEngine>) -> Result<(), BotError> {
     let bot = Bot::new(&env.telegram_bot_token);
 
-    teloxide::repl(bot, move |bot: Bot, msg: Message, cmd: Command| {
+    Command::repl(bot, move |bot: Bot, msg: Message, cmd: Command| {
         let trading_engine = Arc::clone(&trading_engine);
         async move {
             answer(bot, msg, cmd, trading_engine).await

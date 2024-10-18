@@ -1,6 +1,7 @@
 use dotenv::dotenv;
 use std::env;
 
+#[derive(Clone)]
 pub struct Environment {
     pub telegram_bot_token: String,
 }

@@ -1,6 +1,6 @@
-use tokio::sync::Mutex;
-use std::sync::Arc;
 use crate::config::environment::Environment;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 pub struct TradingEngine {
     env: Environment,
@@ -19,10 +19,10 @@ impl TradingEngine {
         loop {
             let is_trading = *self.is_trading.lock().await;
             if is_trading {
-                // todo: implement trading logic here.
+                // TODO: Implement trading logic here
                 println!("Trading...");
             }
-            tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
         }
     }
 
