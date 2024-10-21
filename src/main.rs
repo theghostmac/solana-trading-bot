@@ -20,7 +20,7 @@ async fn main() {
 
     // Start the trading engine and Telegram bot concurrently
     tokio::select! {
-        _ = trading_engine_clone.run() => { // Use the cloned trading engine here
+        _ = trading_engine_clone.run() => {
             eprintln!("Trading engine has stopped");
         }
         result = start_bot(&env, trading_engine) => {

@@ -1,5 +1,8 @@
 /target
 
 /.idea
-analysis.md
+*.md
 .env
+plan.md
+bot.md
+analysis.md
