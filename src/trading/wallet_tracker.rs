@@ -1,8 +1,4 @@
-use solana_client::{
-    rpc_client::RpcClient,
-    rpc_config::RpcTransactionLogsConfig,
-    rpc_config::RpcTransactionLogsFilter,
-};
+use solana_client::rpc_client::RpcClient;
 use solana_sdk::pubkey::Pubkey;
 use std::collections::HashSet;
 use std::str::FromStr;
@@ -10,8 +6,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 use crate::config::environment::Environment;
 use crate::utils::error::BotError;
-use solana_client_helpers::WsClientBuilder;
-use futures::StreamExt;
+use std::time::Duration;
 
 pub struct WalletTracker {
     pub rpc_client: RpcClient,
@@ -34,39 +29,48 @@ impl WalletTracker {
         wallets.insert(pubkey);
         Ok(())
     }
-    
+
     pub async fn remove_wallet(&self, address: &str) -> Result<(), BotError> {
         let pubkey = Pubkey::from_str(address).map_err(|_| BotError::InvalidAddress)?;
         let mut wallets = self.tracked_wallets.lock().await;
         wallets.remove(&pubkey);
         Ok(())
     }
-    
-    pub async fn start_tracking(&self, tx: tokio::sync::mpsc::Sender<String>) -> Result<(), BotError> {
-        let ws_url = self.env.solana_ws_url.clone();
-        let mut ws_client = WsClientBuilder::new().build(&ws_url).await?;
 
+    pub async fn start_tracking(&self, tx: tokio::sync::mpsc::Sender<String>) -> Result<(), BotError> {
         loop {
             let wallets = self.tracked_wallets.lock().await.clone();
             if wallets.is_empty() {
-                tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+                tokio::time::sleep(Duration::from_secs(10)).await;
                 continue;
             }
 
-            let subscription = ws_client.logs_subscribe(
-                RpcTransactionLogsFilter::Mentions(wallets.iter().map(|w| w.to_string()).collect()),
-                RpcTransactionLogsConfig { commitment: None },
-            ).await?;
-
-            let mut notifications = subscription.notifications();
-
-            while let Some(log) = notifications.next().await {
-                if let Ok(log_info) = log {
-                    // Process the log and send a notification
-                    let message = format!("New transaction: {:?}", log_info);
-                    tx.send(message).await.map_err(|_| BotError::ChannelSendError)?;
+            // For now, let's poll the wallets every few seconds
+            // This is a temporary solution until we implement proper WebSocket handling.
+            // The solana-client-helpers::WsClientBuilder wasn't working so...
+            for wallet in wallets.iter() {
+                match self.rpc_client.get_signatures_for_address(wallet) {
+                    Ok(signatures) => {
+                        for sig_info in signatures {
+                            let message = format!("New transaction for {}: {:?}", wallet, sig_info.signature);
+                            if let Err(e) = tx.send(message).await {
+                                eprintln!("Failed to send notification: {}", e);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("Error fetching signatures for {}: {}", wallet, e);
+                    }
                 }
             }
+
+            // Sleep for a few seconds before the next poll
+            tokio::time::sleep(Duration::from_secs(5)).await;
         }
+    }
+
+    // TODO: Implement WebSocket-based tracking in the future
+    async fn _subscribe_to_wallet_transactions(&self, _wallet: &Pubkey) -> Result<(), BotError> {
+        Ok(())
     }
 }
