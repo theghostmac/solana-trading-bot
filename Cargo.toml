@@ -12,3 +12,5 @@ teloxide = { version = "0.12", features = ["macros"] }
 tokio = { version = "1.40.0", features = ["rt-multi-thread", "macros"] }
 solana-sdk = "2.0.13"
 solana-client = "2.0.13"
+solana-client-helpers = "1.1.0"
+futures = "0.3.31"
