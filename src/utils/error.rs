@@ -27,3 +27,13 @@ pub enum BotError {
     #[error("Database error: {0}")]
     DatabaseError(String),
 }
+
+#[derive(Debug, Error)]
+pub enum WalletError {
+    #[error("Invalid wallet address provided: {0}")]
+    InvalidAddress(String),
+    #[error("RPC client error: {0}")]
+    RpcError(#[from] ClientError),
+    #[error("Lock acquisition failed")]
+    LockError,
+}
